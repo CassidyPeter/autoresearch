@@ -58,7 +58,7 @@ results/
 ### 1. Clone and rename
 
 ```bash
-git clone <this-repo> my_project
+git clone https://github.com/Monsets/autoresearch my_project
 cd my_project
 ```
 
