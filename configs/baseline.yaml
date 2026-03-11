@@ -1,0 +1,23 @@
+name: "baseline"
+description: "Baseline config — adapt it to your project and needs"
+
+data:
+  source: <source_name>
+  dataset: <dataset_id>
+  train:
+    start: "2024-01-01"
+    end: "2024-03-31"
+  dev:
+    start: "2024-04-01"
+    end: "2024-06-30"
+
+
+simulation:
+  initial_budget: 10000.0
+  fee: 0.001
+
+evaluation:
+  judge_model: anthropic/claude-sonnet-4-6
+  metrics:
+    - metric_x
+    - judge_score

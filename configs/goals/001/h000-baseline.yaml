@@ -1,0 +1,8 @@
+name: "h000-baseline"
+description: "Baseline — no constraints, default prompt. Establishes floor metrics for goal 001."
+base: "configs/baseline.yaml"
+
+evaluation:
+  metrics:
+    - metric_x
+    - judge_score
