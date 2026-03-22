@@ -1,11 +1,12 @@
-# Optimization Goals
+# Research Goals
 
-| # | Goal | Status | Best Result | Iterations |
-|---|------|--------|------------|------------|
-| 001 | [Example: maximize metric X via prompt optimization](001-example-goal.md) | IN_PROGRESS | metric_x: 0.42 (h001) | 1 hypothesis, 6 runs |
+| # | Goal | Status | Current Stage | Target |
+|---|------|--------|--------------|--------|
+| 001 | [Entropy Budget & Non-Equilibrium BL in Off-Design LPT](001-entropy-budget-off-design-LPT.md) | IN_PROGRESS | H0: Baseline entropy budget at i=0° | JTM journal paper |
+| 002 | [Wake-Induced Transition & Entropy Production in Off-Design LPT](002-wake-induced-transition.md) | PLANNED | Awaiting Y3 wake DNS | Turbo Expo 2026 → JTM |
 
 ---
 
-Add new goals here as rows. One row per goal, linked to its goal doc.
+**Status values:** `IN_PROGRESS` | `PLANNED` | `COMPLETE` | `ABANDONED`
 
-**Status values:** `IN_PROGRESS` | `COMPLETE` | `ABANDONED`
+See `docs/research_direction.md` for the full research strategy, novelty positioning, and ROM plan.
