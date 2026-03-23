@@ -26,7 +26,7 @@
 | 0 | Baseline entropy budget at i=0° establishes reference decomposition | PLANNED | — |
 | 1 | Entropy budget shifts at i=±12°: non-eq. BL contribution increases disproportionately | PLANNED | — |
 | 2 | C_D divergence (Pr vs D_visc) is detectable at DNS resolution and scales with bubble length | PLANNED | — |
-| 3 | SPOD identifies KH and TS modes; KH energy dominates at positive incidence, suppressed at negative | PLANNED | — |
+| 3 | SPOD identifies KH and TS modes; KH energy dominates at positive incidence, suppressed at negative | IN_PROGRESS | Implementation complete (`SPOD_entropy_v1.py`) — 3 inner products: standard / ep_weighted / ep_fluctuation |
 | 4 | RANS Reynolds stress anisotropy error maps onto non-eq. BL region identified by entropy audit | PLANNED | — |
 
 ---
@@ -96,21 +96,48 @@
 
 ## Hypothesis 3: SPOD Coherent Structures in LSB
 
-**Status:** PLANNED
+**Status:** IN_PROGRESS — implementation complete, awaiting DNS run on i=0° data
 
 **Reasoning:** The Genoa group (Lengani, Simoni, Dellacasagrande) has applied POD and wavelet methods to LSBs on flat plates but SPOD is not yet applied to LPT blades at off-design. SPOD with the entropy-production-weighted inner product will isolate which frequency ranges (KH roll-up, TS waves, shedding frequency) contribute most to entropy production.
 
+**Implementation — `postpro/SPOD_entropy_v1.py`:**
+
+Three analyses are implemented in a single call to `SPOD_entropy_v1(...)`:
+
+| Analysis | State vector | Inner product weight W | Eigenvalue meaning |
+|----------|-------------|----------------------|-------------------|
+| `standard` | [u′, v′] grid-aligned | ΔA (cell area) | modal kinetic energy |
+| `ep_weighted` | [u′, v′] grid-aligned | σ̄(x) · ΔA | kinetic energy in loss-producing regions |
+| `ep_fluctuation` | σ′(x,t) = σ(x,t) − σ̄(x) | ΔA | variance of unsteady entropy production |
+
+The entropy production rate is computed at each snapshot from the conservative variables:
+- `p = (γ−1)(ρEt − ½ρ|u|²)`
+- `T = p/(ρ·Rgas)`
+- `μ = Sutherland(T)` using case gas properties
+- `Φ_visc = 2[Sxx² + Syy² + 2Sxy²]`  (2D, low-Mach)
+- `σ = (μ/T) · Φ_visc`
+
+Physical velocity gradients are computed via the general curvilinear metric:
+`∂f/∂x = (1/J)[∂y/∂j · ∂f/∂i − ∂y/∂i · ∂f/∂j]`  where `J = |∂x/∂i · ∂y/∂j − ∂y/∂i · ∂x/∂j|`
+
+The `ep_fluctuation` analysis (Analysis B) is the most physically direct: its eigenvalue spectrum at frequency f quantifies *how much of the unsteady loss at f is organised into coherent modes*. This is novel — no prior SPOD study of turbomachinery LSBs uses entropy production as the state variable.
+
 **Analysis tasks:**
-1. Extract time-resolved snapshots of entropy generation rate field over the LSB region
-2. Apply standard SPOD (Towne et al. 2018 algorithm, Welch method) with kinetic energy kernel
-3. Apply entropy-production-rate weighted SPOD: `<f,g>_s = ∫ ṡ_mean * f * g dΩ`
-4. Identify dominant Strouhal numbers: `St = f * C_ax / U_in`
-5. Compare KH roll-up frequency with linear stability theory estimate: `St_KH ≈ 0.032 * U_e / θ_sep`
-6. Repeat at i = +12° and compare mode shapes and energy rankings
+1. ✅ Implement SPOD with entropy-weighted inner product (`SPOD_entropy_v1.py`)
+2. ⬜ Run on i = 0° suction-side kcut snapshots (2450 @ 15 kHz)
+3. ⬜ Identify dominant Strouhal numbers from `ep_fluctuation` eigenvalue spectrum: `St = f · C_ax / U_in`
+4. ⬜ Compare `ep_fluctuation` vs `standard` SPOD mode rankings — verify KH mode is re-ranked
+5. ⬜ Compare KH roll-up frequency with linear stability estimate: `St_KH ≈ 0.032 · Ue/θ_sep`
+6. ⬜ Repeat at i = +12° and compare mode shapes and energy rankings
+7. ⬜ Produce: (a) σ̄(x) field plot, (b) eigenvalue spectra for all three analyses, (c) mode shapes at peak St for `ep_fluctuation` mode 1
 
-**Expected result:** At i = 0°, KH mode at St ≈ 0.3–0.5 (based on bubble length) dominates first SPOD mode. Entropy-weighted SPOD re-ranks modes compared to kinetic-energy SPOD — the most energetic velocity mode is not necessarily the most loss-producing. At i = +12°, KH mode energy increases; the larger separation provides more shear for KH amplification.
+**Expected result:** At i = 0°, KH mode at St ≈ 0.3–0.5 (based on bubble length) dominates first SPOD mode. The `ep_fluctuation` Analysis B re-ranks modes compared to kinetic-energy SPOD — the most energetic velocity mode is not necessarily the most loss-producing. The `ep_fluctuation` leading mode directly shows the spatial pattern of coherent loss production at the KH frequency. At i = +12°, KH mode eigenvalue increases; the larger separation provides more shear for KH amplification and higher unsteady loss production.
 
-**Success criteria:** Clear spectral peaks identified in SPOD eigenvalue spectrum at physically expected frequencies. Entropy-weighted and kinetic-energy SPOD give observably different mode rankings for at least one case.
+**Success criteria:**
+- Clear spectral peaks in `ep_fluctuation` L[:,0] spectrum at physically expected KH/TS frequencies
+- `ep_weighted` and `standard` SPOD give observably different mode rankings (rank correlation < 0.9)
+- σ̄(x) field concentrates in BL/transition region as expected — validates weight computation
+- `ep_fluctuation` mode 1 at peak St has spatial support localised to shear layer and reattachment zone
 
 **Config:** `configs/goals/001/h003-spod-LSB.yaml`
 
